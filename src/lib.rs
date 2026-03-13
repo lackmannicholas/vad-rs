@@ -6,11 +6,11 @@ mod detector;
 mod inference;
 mod pipeline;
 
-use detector::VoiceActivityDetectorCore;
 use detector::SpeechSegment as CoreSpeechSegment;
+use detector::VoiceActivityDetectorCore;
 
 #[derive(Clone, PartialEq, Eq)]
-#[pyclass(name = "AudioFormat")]
+#[pyclass(name = "AudioFormat", eq, eq_int)]
 pub enum AudioFormat {
     Pcm16 = 0,
     PcmF32 = 1,
@@ -69,18 +69,32 @@ impl VoiceActivityDetectorCorePy {
         Ok(Self { inner })
     }
 
-    fn process_frame(&mut self, audio_bytes: &PyBytes) -> PyResult<(VadResult, Vec<SpeechSegment>)> {
+    fn process_frame(
+        &mut self,
+        audio_bytes: &Bound<'_, PyBytes>,
+    ) -> PyResult<(VadResult, Vec<SpeechSegment>)> {
         let bytes = audio_bytes.as_bytes();
-        let (is_speech, confidence, raw_segments) = self.inner.process_frame(bytes)
+        let (is_speech, confidence, raw_segments) = self
+            .inner
+            .process_frame(bytes)
             .map_err(|e| pyo3::exceptions::PyRuntimeError::new_err(e))?;
 
-        let segments = raw_segments.into_iter().map(|s| SpeechSegment {
-            start_ms: s.start_ms,
-            end_ms: s.end_ms,
-            confidence: s.confidence,
-        }).collect();
+        let segments = raw_segments
+            .into_iter()
+            .map(|s| SpeechSegment {
+                start_ms: s.start_ms,
+                end_ms: s.end_ms,
+                confidence: s.confidence,
+            })
+            .collect();
 
-        Ok((VadResult { is_speech, confidence }, segments))
+        Ok((
+            VadResult {
+                is_speech,
+                confidence,
+            },
+            segments,
+        ))
     }
 
     fn reset(&mut self) -> PyResult<()> {
@@ -91,7 +105,7 @@ impl VoiceActivityDetectorCorePy {
 
 /// A production-grade Voice Activity Detection (VAD) library.
 #[pymodule]
-fn _core(_py: Python, m: &PyModule) -> PyResult<()> {
+fn _core(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<AudioFormat>()?;
     m.add_class::<VoiceActivityDetectorCorePy>()?;
     m.add_class::<VadResult>()?;

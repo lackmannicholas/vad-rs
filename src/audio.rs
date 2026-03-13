@@ -26,7 +26,21 @@ pub fn decode_audio(bytes: &[u8], format: &AudioFormat) -> Result<Vec<f32>, Stri
                 .collect();
             Ok(samples)
         }
-        AudioFormat::Ulaw => Err("ulaw not implemented yet".to_string()),
+        AudioFormat::Ulaw => {
+            let samples: Vec<f32> = bytes
+                .iter()
+                .map(|&byte| {
+                    let val = !byte;
+                    let sign = (val & 0x80) != 0;
+                    let exponent = ((val >> 4) & 0x07) as i16;
+                    let mantissa = (val & 0x0F) as i16;
+                    let sample = (((mantissa << 3) + 132) << exponent) - 132;
+                    let pcm = if sign { -sample } else { sample };
+                    (pcm as f32) / 32_768.0
+                })
+                .collect();
+            Ok(samples)
+        }
         AudioFormat::Alaw => Err("alaw not implemented yet".to_string()),
     }
 }
