@@ -1,0 +1,15 @@
+[package]
+name = "vad-rs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "vad_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+pyo3 = { version = "0.20", features = ["extension-module"] }
+pyo3-log = "0.9"
+numpy = "0.20"
+ort = "2.0.0-rc.0" # Adjust to stable or preferred ORT version
+rubato = "0.14"
