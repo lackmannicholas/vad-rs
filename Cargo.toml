@@ -11,5 +11,6 @@ crate-type = ["cdylib"]
 pyo3 = { version = "0.22", features = ["extension-module"] }
 pyo3-log = "0.11"
 numpy = "0.22"
-ort = "2.0.0-rc.0" # Adjust to stable or preferred ORT version
+ort = { version = "2.0.0-rc", features = ["ndarray"] }
 rubato = "0.14"
+ndarray = "0.17"

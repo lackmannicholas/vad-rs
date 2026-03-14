@@ -19,18 +19,30 @@ impl VadModel for EnergyModel {
         if frame.is_empty() {
             return 0.0;
         }
-        
-        // Simple RMS energy calculation
+
+        // RMS energy calculation
         let mut sum_squares = 0.0;
         for &sample in frame {
             sum_squares += sample * sample;
         }
         let rms = (sum_squares / frame.len() as f32).sqrt();
-        
-        // Return a normalized value roughly mimicking a confidence score
-        // (Just a placeholder for testing without ONNX)
-        let max_energy = 0.5; // Arbitrary max energy
-        (rms / max_energy).clamp(0.0, 1.0)
+
+        // Map RMS to a 0.0–1.0 confidence score using a logarithmic scale.
+        // Telephony speech (µ-law, handset mic) typically has RMS of 0.02–0.15.
+        // A loud speaker might reach 0.2–0.3. Background noise sits around 0.005–0.02.
+        //
+        // We use a dB-inspired mapping:
+        //   - floor at -60 dB (RMS ~0.001) → 0.0
+        //   - ceiling at -6 dB (RMS ~0.5)  → 1.0
+        // This gives good separation across the full dynamic range.
+        let floor_db: f32 = -60.0;
+        let ceil_db: f32 = -6.0;
+        let rms_db = if rms > 1e-10 {
+            20.0 * rms.log10()
+        } else {
+            floor_db
+        };
+        ((rms_db - floor_db) / (ceil_db - floor_db)).clamp(0.0, 1.0)
     }
 
     fn reset(&mut self) {

@@ -50,7 +50,7 @@ impl VoiceActivityDetectorCore {
         min_silence_ms: u32,
         hangover_ms: u32,
     ) -> Result<Self, String> {
-        let model = instantiate_model(model_name)?;
+        let model = instantiate_model(model_name, input_sample_rate)?;
         let target_rate = model.sample_rate();
         let frame_size = model.frame_size();
         let pipeline = AudioPipeline::new(input_sample_rate, target_rate);

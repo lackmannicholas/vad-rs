@@ -9,10 +9,13 @@ pub trait VadModel: Send {
     fn frame_size(&self) -> usize;
 }
 
-pub fn instantiate_model(model_name: &str) -> Result<Box<dyn VadModel + Send>, String> {
+pub fn instantiate_model(
+    model_name: &str,
+    input_sample_rate: u32,
+) -> Result<Box<dyn VadModel + Send>, String> {
     match model_name {
         "energy" => Ok(Box::new(energy::EnergyModel::new())),
-        "silero" => Ok(Box::new(onnx::SileroModel::new()?)),
+        "silero" => Ok(Box::new(onnx::SileroModel::new(input_sample_rate)?)),
         _ => Err(format!("Unknown model: {}", model_name)),
     }
 }
