@@ -1,5 +1,6 @@
 pub mod energy;
 pub mod onnx;
+pub mod ten_vad;
 
 pub trait VadModel: Send {
     /// Run inference on a single audio frame (expected to be f32 samples at the model's sample rate).
@@ -16,6 +17,7 @@ pub fn instantiate_model(
     match model_name {
         "energy" => Ok(Box::new(energy::EnergyModel::new())),
         "silero" => Ok(Box::new(onnx::SileroModel::new(input_sample_rate)?)),
+        "ten_vad" => Ok(Box::new(ten_vad::TenVadModel::new()?)),
         _ => Err(format!("Unknown model: {}", model_name)),
     }
 }

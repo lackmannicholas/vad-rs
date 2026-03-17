@@ -14,3 +14,4 @@ numpy = "0.22"
 ort = { version = "2.0.0-rc", features = ["ndarray"] }
 rubato = "0.14"
 ndarray = "0.17"
+rustfft = "6"
