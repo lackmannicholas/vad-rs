@@ -56,8 +56,8 @@ impl VadModel for SileroModel {
             Err(_) => return 0.0,
         };
 
-        // Build sample rate tensor: scalar i64
-        let sr_tensor = match Tensor::from_array(((), vec![self.sample_rate as i64])) {
+        // Build sample rate tensor: shape [1] i64 (Silero expects a 1-D tensor, not scalar)
+        let sr_tensor = match Tensor::from_array(([1_i64], vec![self.sample_rate as i64])) {
             Ok(t) => t,
             Err(_) => return 0.0,
         };

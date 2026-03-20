@@ -243,10 +243,14 @@ impl TenVadModel {
 
         self.fft.process(&mut fft_buf);
 
-        // Power spectrum for first N_BINS = 513 bins
+        // Magnitude spectrum for first N_BINS = 513 bins.
+        // TEN VAD's mel filterbank is applied to the linear magnitude spectrum
+        // (not the squared power spectrum). Using squared power shifts the
+        // log-mel features ~11 units above the model's training distribution,
+        // causing near-zero confidence output for all inputs.
         let mut bin_power = vec![0.0f32; N_BINS];
         for i in 0..N_BINS {
-            bin_power[i] = fft_buf[i].re * fft_buf[i].re + fft_buf[i].im * fft_buf[i].im;
+            bin_power[i] = (fft_buf[i].re * fft_buf[i].re + fft_buf[i].im * fft_buf[i].im).sqrt();
         }
         bin_power
     }
