@@ -43,6 +43,7 @@ pub struct VoiceActivityDetectorCore {
 impl VoiceActivityDetectorCore {
     pub fn new(
         model_name: &str,
+        model_path: Option<&str>,
         input_sample_rate: u32,
         input_format: AudioFormat,
         threshold: f32,
@@ -50,7 +51,7 @@ impl VoiceActivityDetectorCore {
         min_silence_ms: u32,
         hangover_ms: u32,
     ) -> Result<Self, String> {
-        let model = instantiate_model(model_name, input_sample_rate)?;
+        let model = instantiate_model(model_name, model_path, input_sample_rate)?;
         let target_rate = model.sample_rate();
         let frame_size = model.frame_size();
         let pipeline = AudioPipeline::new(input_sample_rate, target_rate);

@@ -45,9 +45,10 @@ pub struct VoiceActivityDetectorCorePy {
 #[pymethods]
 impl VoiceActivityDetectorCorePy {
     #[new]
-    #[pyo3(signature = (model="silero", input_sample_rate=16000, input_format=AudioFormat::Pcm16, threshold=0.5, min_speech_ms=250, min_silence_ms=100, hangover_ms=300))]
+    #[pyo3(signature = (model="silero", model_path=None, input_sample_rate=16000, input_format=AudioFormat::Pcm16, threshold=0.5, min_speech_ms=250, min_silence_ms=100, hangover_ms=300))]
     fn new(
         model: &str,
+        model_path: Option<&str>,
         input_sample_rate: u32,
         input_format: AudioFormat,
         threshold: f32,
@@ -57,6 +58,7 @@ impl VoiceActivityDetectorCorePy {
     ) -> PyResult<Self> {
         let inner = VoiceActivityDetectorCore::new(
             model,
+            model_path,
             input_sample_rate,
             input_format,
             threshold,

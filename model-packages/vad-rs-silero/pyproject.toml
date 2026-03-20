@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "vad-rs-silero"
+version = "0.1.0"
+description = "Silero VAD model weights for vad-rs"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Nick Lackman" }]
+keywords = ["vad", "voice activity detection", "silero", "speech"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+
+[project.urls]
+Repository = "https://github.com/nicklackman/vad-rs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["vad_rs_silero"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"vad_rs_silero/silero_vad.onnx" = "vad_rs_silero/silero_vad.onnx"

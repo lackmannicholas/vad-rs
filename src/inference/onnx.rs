@@ -2,8 +2,6 @@ use super::VadModel;
 use ort::session::Session;
 use ort::value::Tensor;
 
-const SILERO_ONNX_BYTES: &[u8] = include_bytes!("../../models/silero_vad.onnx");
-
 pub struct SileroModel {
     session: Session,
     sample_rate: u32,
@@ -13,11 +11,11 @@ pub struct SileroModel {
 }
 
 impl SileroModel {
-    pub fn new(input_sample_rate: u32) -> Result<Self, String> {
+    pub fn new(model_path: &str, input_sample_rate: u32) -> Result<Self, String> {
         let session = Session::builder()
             .map_err(|e| format!("Failed to create ORT session builder: {}", e))?
-            .commit_from_memory(SILERO_ONNX_BYTES)
-            .map_err(|e| format!("Failed to load Silero ONNX model: {}", e))?;
+            .commit_from_file(model_path)
+            .map_err(|e| format!("Failed to load Silero ONNX model from '{}': {}", model_path, e))?;
 
         // Silero VAD v5 supports both 8kHz and 16kHz natively.
         // At 8kHz: 256 samples per frame (32ms)

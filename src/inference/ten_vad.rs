@@ -5,8 +5,6 @@ use rustfft::{num_complex::Complex, Fft, FftPlanner};
 use std::f32::consts::PI;
 use std::sync::Arc;
 
-const TEN_VAD_ONNX_BYTES: &[u8] = include_bytes!("../../models/ten_vad.onnx");
-
 // ---------------------------------------------------------------------------
 // Constants matching TEN VAD C source (aed_st.h / coeff.h)
 // ---------------------------------------------------------------------------
@@ -137,11 +135,11 @@ pub struct TenVadModel {
 }
 
 impl TenVadModel {
-    pub fn new() -> Result<Self, String> {
+    pub fn new(model_path: &str) -> Result<Self, String> {
         let session = Session::builder()
             .map_err(|e| format!("Failed to create ORT session builder: {}", e))?
-            .commit_from_memory(TEN_VAD_ONNX_BYTES)
-            .map_err(|e| format!("Failed to load TEN VAD ONNX model: {}", e))?;
+            .commit_from_file(model_path)
+            .map_err(|e| format!("Failed to load TEN VAD ONNX model from '{}': {}", model_path, e))?;
 
         // Generate Hann window: w[n] = sin²(πn/N), matching TEN VAD's Hann768
         let window: Vec<f32> = (0..WINDOW_SIZE)

@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  # Build the main vad-rs wheels for all platforms
+  build-wheels:
+    name: Build wheels (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64
+          - os: ubuntu-latest
+            target: aarch64
+          - os: macos-13
+            target: x86_64
+          - os: macos-14
+            target: aarch64
+          - os: windows-latest
+            target: x86_64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build wheels
+        uses: PyO3/maturin-action@v1
+        with:
+          target: ${{ matrix.target }}
+          args: --release --out dist --find-interpreter
+          sccache: "true"
+          manylinux: auto
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-${{ matrix.os }}-${{ matrix.target }}
+          path: dist
+
+  # Build the sdist for vad-rs
+  build-sdist:
+    name: Build sdist
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build sdist
+        uses: PyO3/maturin-action@v1
+        with:
+          command: sdist
+          args: --out dist
+
+      - name: Upload sdist
+        uses: actions/upload-artifact@v4
+        with:
+          name: sdist
+          path: dist
+
+  # Build pure-Python model packages
+  build-model-packages:
+    name: Build model packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install hatchling
+        run: pip install hatchling
+
+      - name: Build vad-rs-silero
+        working-directory: model-packages/vad-rs-silero
+        run: python -m hatchling build -t wheel
+
+      - name: Build vad-rs-ten-vad
+        working-directory: model-packages/vad-rs-ten-vad
+        run: python -m hatchling build -t wheel
+
+      - name: Upload model wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: model-wheels
+          path: |
+            model-packages/vad-rs-silero/dist/*.whl
+            model-packages/vad-rs-ten-vad/dist/*.whl
+
+  # Publish everything to PyPI
+  publish:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [build-wheels, build-sdist, build-model-packages]
+    environment:
+      name: pypi
+      url: https://pypi.org/p/vad-rs
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist/
