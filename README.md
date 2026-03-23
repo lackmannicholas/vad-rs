@@ -1,5 +1,7 @@
 # vad-rs
 
+## In active development of v0
+
 **vad-rs** is a production-grade Voice Activity Detection (VAD) library implemented in Rust with a clean, high-performance Python API. 
 
 The Rust core handles audio preprocessing, frame management, audio resampling, and model inference, while Python consumers get an easy-to-use, native extension via PyO3 and Maturin.
