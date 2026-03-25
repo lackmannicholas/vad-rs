@@ -124,7 +124,7 @@ for segment in vad.process_stream(read_frames("audio.raw")):
 
 **Notes on synthetic/test signals**: Silero is trained on real speech and can be finicky with synthetic test signals (pure tones, simple harmonics). It may produce low confidence on generated audio that doesn't closely resemble human speech. This is expected — the model is optimized for real-world speech detection, not tone detection. In live use with real microphone audio, Silero performs very well.
 
-### TEN VAD (`model="ten_vad"`)
+### TEN VAD (`model="ten_vad"`) - WORK IN PROGRESS
 
 [TEN VAD](https://github.com/TEN-framework/ten-vad) is from the TEN Framework. Unlike Silero, the ONNX model expects preprocessed features rather than raw audio, so vad-rs implements the full feature extraction pipeline in Rust:
 
